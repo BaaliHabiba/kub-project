@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-redis
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: react-redis
+  template:
+    metadata:
+      labels:
+        app: react-redis
+    spec:
+      containers:
+        - name: react-redis
+          image: baali35000/redis-react-app  
+          ports:
+            - containerPort: 3006 
