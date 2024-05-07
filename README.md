@@ -1,4 +1,77 @@
+# Projet Observabilité
 
-# Dockerfile 
-Two docker file were created one for the redis_node app and that is used by the create_image script to create an image of the app named "redis-node-app",
-and the seconde is for the redis_react app and that is used by the create_image script to create an image of the app named "redis-react-app"
+## 1ere étape : la base de données Redis
+* On crée un déploiment pour la base principale qui accepte l'écriture et la lecture (le fichier redis_deployment)
+* On crée un service pour exposer le déploiment (avec le fichier redis_service) 
+* On crée un déploiment pour les bases de données replica (le fichier redis-replica-deployment) avec la mommande slave-of du premier déploiment de la base principale
+* commande d'éxécusion des fichier 
+    ```
+    kubectl create -f "file_path"
+    ```
+
+## 2eme étape : le déploiment de l'application Redis_node
+* Pour créer le déploiment de l'application on a besoin d'une image qu'on vas créer avec le fichier Dockerfile, et qu'on vas lancer avec la commande 
+    ```
+    docker build -t redis-node-app . 
+    ```
+* J'ai publié l'image sur mon docker hub pour pouvoir utiliser l'image depuis mon cluster kubernetes 
+	```
+    docker tag redis-node-app baali35000/redis-node-app
+	docker login
+	docker push baali35000/redis-node-app
+    ```
+
+* On crée le déploiment de notre application (fichier  node-redis-deployment)
+On donne dans le fichier de déploiment les valeurs des variable d'environement des url des bases de données redis (principale et replicas) 
+	```
+    env:
+            - name: PORT
+              value: '8080'
+            - name: REDIS_URL
+              value: redis://redis.default.svc.cluster.local:6379
+            - name: REDIS_REPLICAS_URL
+              value: redis://redis.default.svc.cluster.local:6379
+    ```
+* On crée le service pour notre application ( le fichier node-redis-service)
+
+## 3eme étape : le déploiment de l'application Redis_react
+* Pour créer le déploiment de l'application on a besoin d'une image qu'on vas créer avec le fichier Dockerfile, et qu'on vas lancer avec la commande 
+    ```
+    docker build -t redis-react-app . 
+    ```
+* J'ai publié l'image sur mon docker hub pour pouvoir utiliser l'image depuis mon cluster kubernetes 
+    ```
+    docker tag redis-react-app baali35000/redis-react-app
+    docker login
+    docker push baali35000/redis-react-app
+    ```
+* On crée le déploiment de notre application (fichier  react-redis-deployment)
+
+* On crée le service pour notre application ( le fichier react-redis-service)
+
+* pour tester si l'application marche bien, la façon la plus simple pour y accéder en dohr du clusteur c'est de faire du port forwarding du service : 
+    ```
+    kubectl port-forward svc/react-redis 3000:3000 
+    ```
+
+## 4eme étape : Prometheus
+* Créer la configuration avec le fichier prometheus-config:
+	on définie le scrape-intervale à 15 sec par éxemple
+	on vas créer un job pour monitorer l'application node-redis, pour le targeter on lui donne l'address ip cluster du service 
+		-ex: targets:["10.103.242.136:8080"] 
+* Créer le déploiment (fichier prometheus-deployement)
+	j'ai récupérer un deploiment par défault (on change le nom de config pour mettre la notre)
+
+* Créer le service (fichier prometheus-service)
+
+## 4eme étape : Grafana
+* Créer le dépoiment (fichier grafana-deployment)
+* Créer le service (fichier grafana-service)
+* On fait du port forwarding pour le service de grafana pour pouvoir y accéder
+    ```
+    kubectl port-forward svc/grafana 3000:3000
+    ```
+ 
+* On va sur localhost:3000, sur la page de connexion de grafana par défault on se connect avec admin/admin
+* On va sur les data source, on choisi prometheus, on met l'address ip cluster du service prometheus et on test la connexion
+* On crée un dashboard pour monitorer les différente metric qu'on vas monitorer (ex: cpu usage, memory usage, total requests, response time)
