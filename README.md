@@ -90,7 +90,7 @@ Les deux ficheirs de config pour créer l'autoscaling sont node-redis-autoscalin
 ## 5eme étape : Grafana
 * Créer le dépoiment (fichier grafana-deployment)
 * Créer le service (fichier grafana-service)
-* On fait du port forwarding pour le service de grafana pour pouvoir y accéder
+* Puisque on va pas gérer du loadbalancing sur ce service, on fait juste du port forwarding pour le service de grafana pour pouvoir y accéder
     ```
     kubectl port-forward svc/grafana 3000:3000
     ```
@@ -102,6 +102,8 @@ Les deux ficheirs de config pour créer l'autoscaling sont node-redis-autoscalin
 ```
 * J'ai crée un dashboard pour monitorer les différente metric qu'on veut monitorer (ex: cpu usage, memory usage, total requests, response time) 
 
+
+![alt text](screenshots/total-requestes-grafana.png)
 
 # Partie 2 (Observabilité)
 ## 1er test sans limiter les ressources de conteneurs
