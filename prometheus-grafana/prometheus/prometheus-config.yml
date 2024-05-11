@@ -19,4 +19,4 @@ data:
         regex: '8080' 
     - job_name: 'node-redis'
       static_configs:
-      - targets: ['10.103.242.136:8080'] 
+      - targets: [node-redis-service:8080] 

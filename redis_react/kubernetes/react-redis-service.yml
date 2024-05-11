@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: react-redis
+  name: react-redis-server
 spec:
   selector:
     app: react-redis

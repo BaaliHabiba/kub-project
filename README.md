@@ -1,5 +1,7 @@
 # Projet Observabilité
 
+# Partie 1 (Créer l'infrastructure de l'application)
+
 ## 1ere étape : la base de données Redis
 * On crée un déploiment pour la base principale qui accepte l'écriture et la lecture (le fichier redis_deployment)
 * On crée un service pour exposer le déploiment (avec le fichier redis_service) 
@@ -54,17 +56,23 @@ On donne dans le fichier de déploiment les valeurs des variable d'environement 
     kubectl port-forward svc/react-redis 3000:3000 
     ```
 
-## 4eme étape : Prometheus
+## 4eme étape : Autoscaling 
+Pour l'autoscaling kubernetes offre plusieurs type d'autoscaling, celui que j'ai utilisé c'est l'HorizontalPodAutoscaler, 
+qui consiste à ajouter de nouveau replica de notre app si jamais une certainne ressource dépasse un seuille donné.\
+J'ai utilisé le CPU avec un seuille de 70%.\
+Les deux ficheirs de config pour créer l'autoscaling sont node-redis-autoscaling.yml et react-redis-autoscaling.yml
+
+## 5eme étape : Prometheus
 * Créer la configuration avec le fichier prometheus-config:
 	on définie le scrape-intervale à 15 sec par éxemple
-	on vas créer un job pour monitorer l'application node-redis, pour le targeter on lui donne l'address ip cluster du service 
-		-ex: targets:["10.103.242.136:8080"] 
+	on vas créer un job pour monitorer l'application node-redis, pour le targeter on lui donne le nom du service et le port 
+		-ex: targets:["node-redis-service:8080"] 
 * Créer le déploiment (fichier prometheus-deployement)
 	j'ai récupérer un deploiment par défault (on change le nom de config pour mettre la notre)
 
 * Créer le service (fichier prometheus-service)
 
-## 4eme étape : Grafana
+## 5eme étape : Grafana
 * Créer le dépoiment (fichier grafana-deployment)
 * Créer le service (fichier grafana-service)
 * On fait du port forwarding pour le service de grafana pour pouvoir y accéder
@@ -73,5 +81,12 @@ On donne dans le fichier de déploiment les valeurs des variable d'environement 
     ```
  
 * On va sur localhost:3000, sur la page de connexion de grafana par défault on se connect avec admin/admin
-* On va sur les data source, on choisi prometheus, on met l'address ip cluster du service prometheus et on test la connexion
-* On crée un dashboard pour monitorer les différente metric qu'on vas monitorer (ex: cpu usage, memory usage, total requests, response time)
+* On va sur les data source, on choisi prometheus, on met le nom du service avec le port et on test la connexion
+```
+    http://prometheus-service:9090
+```
+* J'ai crée un dashboard pour monitorer les différente metric qu'on veut monitorer (ex: cpu usage, memory usage, total requests, response time) 
+
+
+# Partie 2 (Observabilité)
+## 1er test sans limiter les ressources de conteneurs
