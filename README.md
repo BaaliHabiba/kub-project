@@ -36,6 +36,21 @@ On donne dans le fichier de déploiment les valeurs des variable d'environement 
     ```
 * On crée le service pour notre application ( le fichier node-redis-service)
 
+* Pour accéder à l'application en dohr du cluster j'ai utilisé un ingress et pou faire ça il fallait : * 
+
+    * d'abord avoir un inrgess controler, le plus simple c'est d'utilisé nginx pour l'installer :
+        ```
+        minikube addons enable ingress
+        ```
+    * après créer l'ingress avec le fichier node-redis-ingress.yml
+    * je lui donné comme domaine node-redis.com 
+    * donc pour que je peux acceder depuis mon localhost au domaine j'ai ajouter une ligne dans mon fichier /etc/hosts pour mapper le domaine que j'ai choisie avec l'adress de mon minikube 
+    * et avec ça je peux acceder à mon application avec le dommaine node-redis.com
+
+
+![alt text](screenshots/app-runing-on-domaine.png)
+
+
 ## 3eme étape : le déploiment de l'application Redis_react
 * Pour créer le déploiment de l'application on a besoin d'une image qu'on vas créer avec le fichier Dockerfile, et qu'on vas lancer avec la commande 
     ```
