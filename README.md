@@ -130,3 +130,50 @@ On peut voir dans ce cas different type d'appel POST, GET, touts les appels sont
 
 On peut voir qu'entre les premiers appels fetch et le deuxieme avec du read et du write que le deuxieme appel à pris plus de cpu, ce qui logique   
 
+
+## 2eme test avec une limite des ressources du conteneur (1 CPU et 2Gi de RAM)
+
+Pour limiter les ressources du conteneur de notre application j'ai créer un nouveau fichier de depoloiment node-redis-deploymeny-with-limited-resources.yml où j'ai ajouter la config sur les ressources 
+```
+resources:
+    requests:
+        memory: "2Gi"
+        cpu: 1
+    limits:
+        memory: "2Gi"
+        cpu: 1
+```
+
+apres j'ai apply les modifications 
+```
+    kubectl apply -f redis_node/kubernetes/node-redis-deployment-with-limited-ressources.yml 
+```
+
+
+Avec le  script :
+```
+node fetchData.js server 10000 100
+```
+
+Juste apres l'execution de ce script on peut voir sur minikube dashboard une monté dans l'utilisation du processeur et de la memoire par les pods de notre application, 
+meme avec les ressource limité avec cette charfe on n'a pas de monté à l'echelle des pods de notre application. \
+J'ai déminuer le seuille défini de mon autoscaling de 70% d'utilisation de CPU à 10% 
+et avec le même script on peut voir qu'apres quelque secondes un nouveau pod à été créer 
+
+![alt text](screenshots/new-lancement.png)
+
+Et apres un instant avec le redescente du graph d'utilisation de CPU on peut voir que le pod et de nouveau supprimer pour retourner à une seule instance de l'application 
+
+![alt text](screenshots/retour_du_scale.png)
+
+J'ai remarqué qu'on a un petit délai pour que les metrics soient calculés, c'est après le lancement de script de quelques secondes que le metric-serveur retourne une montée dans l'utilisation du CPU et de la RAM, c'est la même chose pour prometheus, on a un scraping intervalle pour récupérer les metrics
+
+Avec le  script :
+```
+node fetchData.js writeRead 10000 100
+```
+![alt text](screenshots/second-script.png)
+Avec le même seuille d'utilisation de CPU que le premier script (10%), en exécutant ce script on a deux nouveaux pods creer pour notre application pour donner un total de 3 replicas, ce qui confirme que le script d'écriture et de lecture consome plus de CPU que celui de lecture, et c'est ce qu'on a vue sur le graph d'utilisation de CPU de grafana au paravant.  
+
+![alt text](screenshots/two-new-pods.png)
+ 
