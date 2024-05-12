@@ -74,7 +74,7 @@ const writeAndRead = async (max = 10000, iter = 10) => {
       })
     )
     const readRes = Promise.all(
-      new Array(iter).fill(1).map((_) => getItem(words[random(words.length)]))
+      new Array(Number(iter)).fill(1).map((_) => getItem(words[random(words.length)]))
     )
 
     const res = await Promise.all([writeRes, readRes])

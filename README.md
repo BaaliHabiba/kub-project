@@ -1,5 +1,13 @@
 # Projet Observabilité
 
+# Partie 0 (Architecture du code)
+
+J'ai un dossier pour chaque composant de notre infrastructure (redis-db, node-redis, react-redis, ....) 
+
+Dans chaque dossier composant si on a besoin d'autre code que la config kubernetes, j'ai un dossier kubernetes dédié pour les configs.  
+
+J'ai un fichier par type de config kubernetes (deploiment, service, autoscaling ...)
+
 # Partie 1 (Créer l'infrastructure de l'application)
 
 ## 1ere étape : la base de données Redis
@@ -217,8 +225,38 @@ Totalité des appels :
 
 
 ```
-node fetchData.js server 10000000 1000000
+node fetchData.js server 10000000 10000000
 ```
+
+Avec ce script c'est mon PC qui a atteint sa limite avant de faire l'appel a l'application.
+
+En faisant des read et des write : 
+
+J'ai remarqué la même erreur que pour la lecture simple les paramètres sont lus comme des strings et non pas des numbers (mêmes fixes).
+
+```
+node fetchData.js writeRead 10000 100
+```
+Avec ce script la totalité des appels sont en success, avec utilisation de CPU assez stable pas de nouveau pod créer.
+
+```
+node fetchData.js writeRead 100000 1000
+```
+Avec ce script contrairement au script de lecture seule, on commence à avoir une montée à l'échelle de notre application, deux pods au lieu d'une seule. \
+Parfois les poids ajoutés sont en error et il se restart jusqu'à ce qu'ils sont en succès, et quand c'est le cas supprimer le pod manuallement accélére le relancement.
+
+![alt text](screenshots/pod_in_error.png)
+
+
+```
+node fetchData.js writeRead 100000 10000
+```
+Avec ces paramètres on commence à avoir des timeouts sur des appels, on commence à attendre la limite d'appels simultanés. \
+Ça prend un peu de temps pour que les métrics soient calculés et que l'auto-scaling lance un nouveau pod, donc on a des appels qui fail après on peut voir que les appels passent normalement de nouveau.
+
+![alt text](screenshots/time_out.png)
+![alt text](screenshots/return_to_normal_after_time_out.png)
+
 
 # Conculusion 
 En conclusion on peut voir que le monitoring des applications est très utile, et que kubernetes facilite bien la construction d'une infrastructure de notre application, et facilite aussi le suivie avec du monitoring. \
