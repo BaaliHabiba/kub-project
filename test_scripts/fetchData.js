@@ -1,4 +1,4 @@
-const URL = process.env.URL || 'http://node-redis.com/'
+const URL = process.env.URL || 'http://node-redis.com'
 
 const words = [
   'drive',

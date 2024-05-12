@@ -107,3 +107,26 @@ Les deux ficheirs de config pour créer l'autoscaling sont node-redis-autoscalin
 
 # Partie 2 (Observabilité)
 ## 1er test sans limiter les ressources de conteneurs
+Avec le  script :
+```
+node fetchData.js server 10000 100
+```
+![alt text](screenshots/successfull-execution1.png)
+![alt text](screenshots/total-request-first-sccript.png)
+
+L'execution etait asser rapide, on peut voir une montée sur le graph de nombre d'appel et que les appels sont en succes (code http de retour 200) \
+Pas de charge particulière pour ce cas, on n'a pas de monté à l'echelle des pods de notre application
+
+Avec le  script :
+```
+node fetchData.js writeRead 10000 100
+```
+![alt text](screenshots/second-script.png)
+On peut voir dans ce cas different type d'appel POST, GET, touts les appels sont ont succes aussi et pas assez de charge pour monté à l'echelle les pods de notre application 
+
+
+![alt text](screenshots/graph-cpu.png)
+
+
+On peut voir qu'entre les premiers appels fetch et le deuxieme avec du read et du write que le deuxieme appel à pris plus de cpu, ce qui logique   
+

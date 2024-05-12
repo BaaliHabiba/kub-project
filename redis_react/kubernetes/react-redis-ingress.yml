@@ -14,4 +14,4 @@ spec:
               service: 
                 name: react-redis-server
                 port:
-                  number: 3006
+                  number: 30973
