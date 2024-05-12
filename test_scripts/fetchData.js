@@ -54,7 +54,7 @@ const onlyServerTest = async (max = 10000, iter = 100) => {
   let call = 0
   while (call < max) {
     console.log('fetch')
-    const res = await Promise.all(new Array(iter).fill(1).map((_) => ping()))
+    const res = await Promise.all(new Array(Number(iter)).fill(1).map((_) => ping()))
     call += res.length
     console.log('wait')
     sleep(200)

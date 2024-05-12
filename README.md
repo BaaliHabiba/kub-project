@@ -150,7 +150,7 @@ apres j'ai apply les modifications
 ```
 
 
-Avec le  script :
+### Avec le  script :
 ```
 node fetchData.js server 10000 100
 ```
@@ -168,7 +168,7 @@ Et apres un instant avec le redescente du graph d'utilisation de CPU on peut voi
 
 J'ai remarqué qu'on a un petit délai pour que les metrics soient calculés, c'est après le lancement de script de quelques secondes que le metric-serveur retourne une montée dans l'utilisation du CPU et de la RAM, c'est la même chose pour prometheus, on a un scraping intervalle pour récupérer les metrics
 
-Avec le  script :
+### Avec le  script :
 ```
 node fetchData.js writeRead 10000 100
 ```
@@ -177,3 +177,51 @@ Avec le même seuille d'utilisation de CPU que le premier script (10%), en exéc
 
 ![alt text](screenshots/two-new-pods.png)
  
+Et quelques instants apres la fin d'éxecution du script on retourne à un seule pod pour l'application 
+
+![alt text](screenshots/one-pod-again.png)
+
+## Je remet la seuille d'autoscaling à 70% de CPU et j'essaye de faire monté le nombre d'appels simultané pour une ressource :
+Je commence avec le fetch : 
+
+En commençant le fetch j'ai constaté qu'on avait un problème, parce que en changent les paramètres du script je n'avais pas un changement dans les graphs de nombre d'appels par seconde ou bien l'utilisation du CPU.
+
+Et j'ai trouvé que le script dans tous les cas faisait qu'un seul appel à la fois parce que les paramètres était typé en string ce qui causé un problème lors de la construction du tableau  de promesses, j'ai fixé ça en utilisant Number() sur le paramètre.
+
+```
+node fetchData.js server 100000 1000
+```
+
+J'ai commencer par executer le script avec un appel à la fois, ensuite j'ai executer le script en dessus \
+La totalité des appels en success, avec utilisation de CPU assez stable pas de nouveau pod créer avec le seuille d'autoscaling 70%
+On peut clairement voir qu'on a plus d'appels par seconde et qu'on consomme plus de CPU
+
+Charge CPU :
+![alt text](screenshots/cpu_usage_charge1.png)
+
+Totalité des appels :
+![alt text](screenshots/requests_total_charge1.png)
+
+
+```
+node fetchData.js server 1000000 10000
+```
+
+Totalité des appels en success aussi, on peut voir la difference entre le nombre totale d'appels mais pas trop de difference de CPU entre le premier et le deuxieme script
+
+Charge CPU :
+![alt text](screenshots/cpu-usage-charge2.png)
+
+Totalité des appels :
+![alt text](screenshots/requests-total-charge-2.png)
+
+
+```
+node fetchData.js server 10000000 1000000
+```
+
+# Conculusion 
+En conclusion on peut voir que le monitoring des applications est très utile, et que kubernetes facilite bien la construction d'une infrastructure de notre application, et facilite aussi le suivie avec du monitoring. \
+Je pense qu'il n'y a pas une regle à suivre en ce qui concerne les ressources à allouer pour nos conteneurs ou bien la règle à mettre pour une montée à l'échelle de l'application;
+je pense qu'on peut bien faire des tests de perfs pour faire une estimation de notre configuration, mais c'est surtout au fur et à mesure de l'utilisation de l'application qu'on doit ajuster nos ressources ainsi que nos monitorings. 
+Et de ce que j'ai constaté c'est que même avec une application de haute disponibilité on peut avoir des problèmes, c'est le cas si on dépasse vraiment les ressources allouées ou bien si jamais on n'a énormément d'appels, dans un intervalle de temps très court que les métrics ne sont pas encore récupérées pour déclencher une montée à l'échelle de l'application, ce qui donne encore plus d'importance au monitoring de l'application, on aura au moins la data qu'on a eu des appels en fail et essayer de trouver des solutions, et avec de l'investigation sur le problème rencontré on peut améliorer le monitoring
